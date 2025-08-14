@@ -16,7 +16,7 @@ public class UserService : IUserService
     private readonly IMapper _mapper;
     private readonly ILogger<UserService> _logger;
 
-    public UserService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<UserService>logger)
+    public UserService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<UserService> logger)
     {
         // TODO: ESTUDIANTE - Configurar las dependencias inyectadas
         _unitOfWork = unitOfWork;
@@ -68,7 +68,29 @@ public class UserService : IUserService
     public async Task<UserDto?> GetUserByEmailAsync(string email)
     {
         // TODO: ESTUDIANTE - Implementar lógica
-        throw new NotImplementedException("Método pendiente de implementación por el estudiante");
+        //throw new NotImplementedException("Método pendiente de implementación por el estudiante");
+        try
+        {
+            _logger.LogInformation("Buscando usuario por email: {Email}", email);
+
+            var user = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                _logger.LogInformation("No se encontró usuario con email: {Email}", email);
+                return null;
+            }
+
+            var userDto = _mapper.Map<UserDto>(user);
+
+            _logger.LogInformation("Usuario encontrado con ID: {UserId}", user.UserId);
+            return userDto;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al buscar usuario por email: {Email}", email);
+            throw;
+        }
     }
 
     /// <summary>
@@ -162,5 +184,87 @@ public class UserService : IUserService
     {
         // TODO: ESTUDIANTE - Implementar lógica
         throw new NotImplementedException("Método pendiente de implementación por el estudiante");
+    }
+
+    public async Task<User?> GetUserEntityByEmailAsync(string email)
+    {
+        //throw new NotImplementedException();
+        try
+        {
+            _logger.LogInformation("Buscando entidad User por email: {Email}", email);
+
+            var user = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user != null)
+            {
+                _logger.LogInformation("Entidad User encontrada para email: {Email}", email);
+            }
+            else
+            {
+                _logger.LogInformation("No se encontró entidad User para email: {Email}", email);
+            }
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al buscar entidad User por email: {Email}", email);
+            throw;
+        }
+    }
+
+    public async Task<User?> GetUserEntityByIdAsync(int userId)
+    {
+        //throw new NotImplementedException();
+        try
+        {
+            _logger.LogInformation("Buscando entidad User por ID: {UserId}", userId);
+
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+            if (user != null)
+            {
+                _logger.LogInformation("Entidad User encontrada para ID: {UserId}", userId);
+            }
+            else
+            {
+                _logger.LogInformation("No se encontró entidad User para ID: {UserId}", userId);
+            }
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al buscar entidad User por ID: {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task<bool> UpdateUserEntityAsync(User user)
+    {
+        //throw new NotImplementedException();
+        try
+        {
+            _logger.LogInformation("Actualizando entidad User con ID: {UserId}", user.UserId);
+
+            _unitOfWork.Users.Update(user);
+            var result = await _unitOfWork.SaveChangesAsync();
+
+            if (result > 0)
+            {
+                _logger.LogInformation("Entidad User actualizada exitosamente: {UserId}", user.UserId);
+                return true;
+            }
+            else
+            {
+                _logger.LogWarning("No se pudo actualizar la entidad User: {UserId}", user.UserId);
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar entidad User: {UserId}", user.UserId);
+            throw;
+        }
     }
 }
